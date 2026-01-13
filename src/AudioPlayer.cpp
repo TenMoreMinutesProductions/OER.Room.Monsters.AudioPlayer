@@ -7,6 +7,7 @@ static DY::Player player(&Serial2);
 static uint8_t currentVolume = DYPLAYER_VOLUME;
 
 void audioPlayerInit() {
+  Serial.flush();  // Ensure serial buffer is clear before initializing Serial2
   Serial2.begin(9600, SERIAL_8N1, DYPLAYER_RX_PIN, DYPLAYER_TX_PIN);
   delay(500);  // Give module time to initialize after power-on
 

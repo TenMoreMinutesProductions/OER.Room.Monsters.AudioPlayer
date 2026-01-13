@@ -13,10 +13,10 @@
 // ============================================================
 //                  MODULE ENABLE/DISABLE
 // ============================================================
-#define USE_WIFI 1      // WiFi connectivity
+#define USE_WIFI 0      // WiFi connectivity
 #define USE_MQTT 0      // MQTT pub/sub (requires WiFi)
-#define USE_MDNS 1      // mDNS discovery (requires WiFi)
-#define USE_OTA 1       // Over-the-air updates (requires WiFi)
+#define USE_MDNS 0      // mDNS discovery (requires WiFi)
+#define USE_OTA 0       // Over-the-air updates (requires WiFi)
 #define USE_ESPNOW 1    // ESP-NOW communication
 #define USE_HEARTBEAT 1 // Heartbeat LED status indicator
 

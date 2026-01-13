@@ -22,6 +22,15 @@ void onMqttMessage(String topic, String payload) {
 #endif
 
 #if USE_ESPNOW
+#include "modules/espnow_module.h"
+
+// Send ACK response to sender
+static void sendAck(const uint8_t* mac) {
+  const char* ack = "ACK";
+  espnowSend(mac, (const uint8_t*)ack, strlen(ack));
+  Serial.println("[ESP-NOW] Sent ACK");
+}
+
 // Called when ESP-NOW message is received
 void onEspNowReceive(const uint8_t* mac, const uint8_t* data, int len) {
   // Convert received data to string
@@ -44,17 +53,26 @@ void onEspNowReceive(const uint8_t* mac, const uint8_t* data, int len) {
   command.trim();
   command.toUpperCase();
 
-  if (command == "PLAY" || command == "START") {
+  if (command == "PING") {
+    // Respond with ACK for connection monitoring
+    sendAck(mac);
+  } else if (command == "PLAY" || command == "START") {
     audioPlayerPlay();
+    sendAck(mac);
   } else if (command == "STOP") {
     audioPlayerStop();
+    sendAck(mac);
   } else if (command == "RESTART") {
     audioPlayerRestart();
+    sendAck(mac);
   } else if (command == "VOL_UP" || command == "VOLUP" || command == "V+") {
     audioPlayerVolumeUp();
+    sendAck(mac);
   } else if (command == "VOL_DOWN" || command == "VOLDOWN" || command == "V-") {
     audioPlayerVolumeDown();
+    sendAck(mac);
   } else if (command == "RESET") {
+    sendAck(mac);
     propRequestReset();
   } else {
     Serial.print("[ESP-NOW] Unknown command: ");
