@@ -40,6 +40,7 @@ Note: ESP32 is 3.3V logic, DY-HV20T is 5V tolerant on IO pins. No level shifter 
 ## Features
 
 - **DY-HV20T control**: Play, stop, volume adjustment
+- **Persistent volume**: Saved to flash, restored on startup
 - **ESP-NOW receiver**: Accepts commands from AudioController
 - **ACK responses**: Confirms command receipt for connection monitoring
 - **Heartbeat LED**: Shows device is running normally
@@ -66,8 +67,19 @@ Configured in `config.h`:
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `DYPLAYER_VOLUME` | 20 | Initial volume (0-30) |
+| `DYPLAYER_VOLUME` | 18 | Default volume (0-30), used on first boot |
+| `DYPLAYER_VOLUME_STEP` | 6 | Volume change per button press |
 | `DYPLAYER_TRACK` | 1 | Track number to play (00001.mp3) |
+
+### Volume Persistence
+
+Volume is saved to flash memory and restored on startup. The volume step of 6 gives these levels:
+
+```
+0 → 6 → 12 → 18 → 24 → 30
+```
+
+5 clicks from mute to maximum.
 
 ## Modules Enabled
 
