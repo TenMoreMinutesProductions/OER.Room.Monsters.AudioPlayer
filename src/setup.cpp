@@ -1,6 +1,7 @@
 #include "setup.h"
 #include "config.h"
 #include "esp_task_wdt.h"
+#include "AudioPlayer.h"
 
 // Module includes
 #if USE_WIFI
@@ -313,6 +314,9 @@ void setupInit() {
     );
     Serial.println("[Reset] Button task started on Core 0 (GPIO " + String(RESET_PIN) + ")");
   #endif
+
+  // Initialize audio player
+  audioPlayerInit();
 
   // Print network status after all modules initialized
   printNetworkInfo();

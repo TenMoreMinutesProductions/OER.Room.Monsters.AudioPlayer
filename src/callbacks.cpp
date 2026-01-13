@@ -1,11 +1,11 @@
 #include "callbacks.h"
 #include "config.h"
 #include "setup.h"
+#include "AudioPlayer.h"
 
 // ============================================================
 //                   CALLBACK FUNCTIONS
 // ============================================================
-// Customize these for your puzzle-specific logic.
 
 #if USE_MQTT
 // Called when MQTT message is received on subscribed topics
@@ -18,28 +18,48 @@ void onMqttMessage(String topic, String payload) {
     propRequestReset();
     return;
   }
-
-  // Add your puzzle-specific MQTT handling here
-  // Example:
-  // if (payload.equalsIgnoreCase("solve")) {
-  //   solvePuzzle();
-  // }
 }
 #endif
 
 #if USE_ESPNOW
 // Called when ESP-NOW message is received
 void onEspNowReceive(const uint8_t* mac, const uint8_t* data, int len) {
-  Serial.print("[ESP-NOW] Received ");
-  Serial.print(len);
-  Serial.print(" bytes from ");
+  // Convert received data to string
+  char cmd[32];
+  int copyLen = (len < 31) ? len : 31;
+  memcpy(cmd, data, copyLen);
+  cmd[copyLen] = '\0';
+
+  Serial.print("[ESP-NOW] Received: ");
+  Serial.print(cmd);
+  Serial.print(" from ");
   for (int i = 0; i < 6; i++) {
     Serial.printf("%02X", mac[i]);
     if (i < 5) Serial.print(":");
   }
   Serial.println();
 
-  // Add your puzzle-specific ESP-NOW handling here
+  // Handle audio player commands (case-insensitive)
+  String command = String(cmd);
+  command.trim();
+  command.toUpperCase();
+
+  if (command == "PLAY" || command == "START") {
+    audioPlayerPlay();
+  } else if (command == "STOP") {
+    audioPlayerStop();
+  } else if (command == "RESTART") {
+    audioPlayerRestart();
+  } else if (command == "VOL_UP" || command == "VOLUP" || command == "V+") {
+    audioPlayerVolumeUp();
+  } else if (command == "VOL_DOWN" || command == "VOLDOWN" || command == "V-") {
+    audioPlayerVolumeDown();
+  } else if (command == "RESET") {
+    propRequestReset();
+  } else {
+    Serial.print("[ESP-NOW] Unknown command: ");
+    Serial.println(cmd);
+  }
 }
 
 // Called when ESP-NOW send completes
@@ -52,22 +72,19 @@ void onEspNowSend(const uint8_t* mac, bool success) {
 // ============================================================
 //                    RESET HANDLER
 // ============================================================
-// Called when reset is triggered via button (held 1s) or MQTT command.
+// Called when reset is triggered via button (held 1s) or ESP-NOW command.
 
 void onPropReset() {
-  propLog("[Reset] Resetting prop to initial state...");
+  propLog("[Reset] Resetting audio player...");
 
-  // Reset outputs
-  digitalWrite(OUTPUT_PIN, LOW);
+  // Stop current playback
+  audioPlayerStop();
 
-  // Add your reset logic here
-  // - Reset game state variables
-  // - Turn off LEDs/motors
-  // - Reset audio players
-  //
-  // To integrate with SampleFunction state machine:
-  //   extern void resetSampleState();
-  //   resetSampleState();
+  // Reset volume to default
+  audioPlayerSetVolume(DYPLAYER_VOLUME);
 
-  propLog("[Reset] Complete");
+  // Restart the audio loop
+  audioPlayerStartLoop();
+
+  propLog("[Reset] Complete - audio restarted");
 }

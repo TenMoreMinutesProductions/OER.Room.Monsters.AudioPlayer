@@ -46,11 +46,6 @@
 #define MQTT_BROKER "192.168.1.218"
 #define MQTT_PORT 1883
 #define MQTT_TOPIC_PREFIX "SP/"
-// Derived values use DEVICE_IDENTIFIER:
-// - Client name: "client_" + DEVICE_IDENTIFIER
-// - Base topic:  MQTT_TOPIC_PREFIX + DEVICE_IDENTIFIER
-// - Status topic: base + "/status"
-// - Command topic: base + "/cmd" (auto-subscribed)
 #endif
 
 // ============================================================
@@ -75,12 +70,6 @@
 // ============================================================
 #if USE_HEARTBEAT
 #define HEARTBEAT_PIN 48 // GPIO48 = onboard RGB LED on ESP32-S3-DevKitC-1
-// Heartbeat states - set initial state based on your boot sequence
-// HB_BOOTING:    Fast blink (100ms)  - Initializing
-// HB_AP_ONLY:    Double pulse        - Awaiting config (captive portal)
-// HB_CONNECTING: Triple pulse        - Connecting to WiFi
-// HB_NORMAL:     Slow blink (1000ms) - Normal operation
-// HB_ERROR:      SOS pattern         - Error state
 #endif
 
 // ============================================================
@@ -94,15 +83,50 @@
 // - GPIO 38-42: May be used for JTAG debugging
 // - ADC1: GPIO 1-10 (safe to use with WiFi)
 // - ADC2: GPIO 11-20 (conflicts with WiFi - avoid for ADC when WiFi active)
-// - No DAC pins on S3 - use I2S or external DAC for audio
 //
 // Safe general-purpose pins: 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
 #define INPUT_PIN 4
 #define OUTPUT_PIN 5
 
 // Reset button pin (active LOW with internal pullup)
-// Hold for 1 second to trigger prop reset
-// Comment out to disable physical reset button
 #define RESET_PIN 6
+
+// DY-HV20T Audio Player (UART)
+#define DYPLAYER_RX_PIN 16  // ESP32 RX <- DY-HV20T TX (IO0)
+#define DYPLAYER_TX_PIN 17  // ESP32 TX -> DY-HV20T RX (IO1)
+
+// ============================================================
+//                   DY-HV20T AUDIO SETTINGS
+// ============================================================
+#define DYPLAYER_VOLUME 20     // Volume level (0-30)
+#define DYPLAYER_TRACK 1       // Track number to loop (00001.mp3)
+
+/*
+ * DY-HV20T WIRING:
+ * ================
+ * DY-HV20T Pin   ESP32-S3 Pin    Notes
+ * -----------    ------------    -----
+ * VIN            5V              Power supply (6-35VDC)
+ * GND            GND             Common ground
+ * IO0 (TX)       GPIO16 (RX2)    Serial data from player
+ * IO1 (RX)       GPIO17 (TX2)    Serial data to player
+ * SPK+           Speaker +       4-8 ohm speaker (up to 20W)
+ * SPK-           Speaker -       4-8 ohm speaker
+ *
+ * CON1           GND             \
+ * CON2           GND              } One-line serial mode
+ * CON3           3.3V            /
+ *
+ * Note: ESP32 is 3.3V logic, DY-HV20T is 5V tolerant on IO pins.
+ *       No level shifter needed for ESP32 connection.
+ *
+ * ESP-NOW COMMANDS (from controller ESP32):
+ * =========================================
+ * "PLAY"     - Start/resume playback
+ * "STOP"     - Stop playback
+ * "RESTART"  - Restart track from beginning
+ * "VOL_UP"   - Increase volume
+ * "VOL_DOWN" - Decrease volume
+ */
 
 #endif
