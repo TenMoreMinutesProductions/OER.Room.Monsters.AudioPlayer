@@ -98,7 +98,8 @@
 // ============================================================
 //                   DY-HV20T AUDIO SETTINGS
 // ============================================================
-#define DYPLAYER_VOLUME 20     // Volume level (0-30)
+#define DYPLAYER_VOLUME 18     // Default volume level (0-30), saved to flash
+#define DYPLAYER_VOLUME_STEP 6 // Volume change per button press
 #define DYPLAYER_TRACK 1       // Track number to loop (00001.mp3)
 
 /*
