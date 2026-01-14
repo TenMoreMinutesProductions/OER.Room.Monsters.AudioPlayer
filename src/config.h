@@ -62,7 +62,7 @@
 #define ESPNOW_HOST 0 // 1 = Host (broadcasts), 0 = Client (listens)
 // Host MAC address - set this to your host device's MAC
 // Only used when ESPNOW_HOST is 0 (client mode)
-#define ESPNOW_HOST_MAC {0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF}
+#define ESPNOW_HOST_MAC {0xB8, 0xF8, 0x62, 0x62, 0xFF, 0x04}
 #endif
 
 // ============================================================
