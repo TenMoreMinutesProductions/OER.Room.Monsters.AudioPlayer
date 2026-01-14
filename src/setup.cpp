@@ -2,6 +2,7 @@
 #include "config.h"
 #include "esp_task_wdt.h"
 #include "AudioPlayer.h"
+#include "esp_heap_caps.h"
 
 // Module includes
 #if USE_WIFI
@@ -117,6 +118,69 @@ static const char* getResetReasonString() {
     case ESP_RST_BROWNOUT:  return "Brownout (Low Voltage)";
     case ESP_RST_SDIO:      return "SDIO";
     default:                return "Unknown";
+  }
+}
+
+// ============================================================
+//                    PSRAM TEST
+// ============================================================
+static void testPsram() {
+  Serial.println("[PSRAM] Testing...");
+
+  // Check if PSRAM is available
+  if (!psramFound()) {
+    Serial.println("[PSRAM] ERROR: Not detected!");
+    return;
+  }
+
+  // Get PSRAM info
+  size_t totalPsram = ESP.getPsramSize();
+  size_t freePsram = ESP.getFreePsram();
+
+  Serial.print("[PSRAM] Total: ");
+  Serial.print(totalPsram / 1024 / 1024.0, 2);
+  Serial.println(" MB");
+  Serial.print("[PSRAM] Free:  ");
+  Serial.print(freePsram / 1024 / 1024.0, 2);
+  Serial.println(" MB");
+
+  // Allocate test buffer in PSRAM (1MB)
+  const size_t testSize = 1024 * 1024;
+  Serial.print("[PSRAM] Allocating ");
+  Serial.print(testSize / 1024);
+  Serial.println(" KB test buffer...");
+
+  uint8_t* testBuffer = (uint8_t*)ps_malloc(testSize);
+  if (testBuffer == nullptr) {
+    Serial.println("[PSRAM] ERROR: Failed to allocate test buffer!");
+    return;
+  }
+
+  // Write test pattern
+  Serial.println("[PSRAM] Writing test pattern...");
+  for (size_t i = 0; i < testSize; i++) {
+    testBuffer[i] = (uint8_t)(i & 0xFF);
+  }
+
+  // Verify test pattern
+  Serial.println("[PSRAM] Verifying...");
+  bool passed = true;
+  for (size_t i = 0; i < testSize; i++) {
+    if (testBuffer[i] != (uint8_t)(i & 0xFF)) {
+      Serial.print("[PSRAM] ERROR: Mismatch at byte ");
+      Serial.println(i);
+      passed = false;
+      break;
+    }
+  }
+
+  // Free test buffer
+  free(testBuffer);
+
+  if (passed) {
+    Serial.println("[PSRAM] Test PASSED - PSRAM is working correctly");
+  } else {
+    Serial.println("[PSRAM] Test FAILED - PSRAM has errors!");
   }
 }
 
@@ -243,6 +307,9 @@ void setupInit() {
   Serial.print(" ");
   Serial.println(__TIME__);
   Serial.println("========================================");
+
+  // Test PSRAM early in boot
+  testPsram();
 
   // Initialize heartbeat LED first (visual feedback during boot)
   #if USE_HEARTBEAT
